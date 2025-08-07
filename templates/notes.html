@@ -21,9 +21,15 @@
                 <h5 class="card-title mb-0">Quick Note</h5>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <label for="noteTitle" class="form-label">Title</label>
-                    <input type="text" class="form-control" id="noteTitle" placeholder="Enter note title...">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="noteTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="noteTitle" placeholder="Enter note title...">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="noteDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="noteDate">
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="noteContent" class="form-label">Content</label>
@@ -111,21 +117,31 @@
 let notes = JSON.parse(localStorage.getItem('studentNotes') || '[]');
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
+    
     displayRecentNotes();
 });
 
 function addNewNote() {
     document.getElementById('noteTitle').value = '';
     document.getElementById('noteContent').value = '';
+    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('noteTitle').focus();
 }
 
 function saveNote() {
     const title = document.getElementById('noteTitle').value.trim();
     const content = document.getElementById('noteContent').value.trim();
+    const date = document.getElementById('noteDate').value;
     
     if (!title || !content) {
         alert('Please enter both title and content for your note.');
+        return;
+    }
+    
+    if (!date) {
+        alert('Please select a date for your note.');
         return;
     }
     
@@ -133,8 +149,9 @@ function saveNote() {
         id: Date.now(),
         title: title,
         content: content,
-        date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString()
+        date: date,
+        time: new Date().toLocaleTimeString(),
+        timestamp: new Date().toISOString()
     };
     
     notes.unshift(note);
@@ -156,6 +173,7 @@ function saveNote() {
 function clearNote() {
     document.getElementById('noteTitle').value = '';
     document.getElementById('noteContent').value = '';
+    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
 }
 
 function displayRecentNotes() {
@@ -176,7 +194,7 @@ function displayRecentNotes() {
         <div class="border rounded p-3 mb-3">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <h6 class="mb-0">${note.title}</h6>
-                <small class="text-muted">${note.date}</small>
+                <small class="text-muted">${new Date(note.date).toLocaleDateString()}</small>
             </div>
             <p class="text-muted small mb-2">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
             <div class="d-flex gap-2">
@@ -196,6 +214,7 @@ function editNote(id) {
     if (note) {
         document.getElementById('noteTitle').value = note.title;
         document.getElementById('noteContent').value = note.content;
+        document.getElementById('noteDate').value = note.date;
         
         // Remove the note from array (it will be re-added when saved)
         notes = notes.filter(n => n.id !== id);

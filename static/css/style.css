@@ -175,3 +175,83 @@ main {
 .border-start-danger {
     border-left: 3px solid var(--bs-danger) !important;
 }
+
+/* Calendar styles */
+.calendar-grid {
+    font-size: 0.8rem;
+}
+
+.calendar-day {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.calendar-day:hover {
+    background-color: var(--bs-gray-700) !important;
+    transform: scale(1.05);
+}
+
+.calendar-day.has-activity {
+    position: relative;
+}
+
+.calendar-day.has-activity::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--bs-info);
+    border-radius: 50%;
+}
+
+/* Pomodoro timer styles */
+.timer-container {
+    background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+    border-radius: 50%;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.rating-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.rating-btn.active {
+    background-color: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+/* Matrix task styles */
+.task-card {
+    transition: all 0.2s ease;
+    cursor: grab;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+/* Theme toggle enhancement */
+#themeToggle {
+    transition: all 0.3s ease;
+}
+
+#themeToggle:hover {
+    transform: scale(1.05);
+}

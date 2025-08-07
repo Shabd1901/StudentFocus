@@ -46,17 +46,28 @@
                                 Planner
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'pomodoro' %}active{% endif %}" href="{{ url_for('pomodoro') }}">
+                                <i class="fas fa-clock me-2"></i>
+                                Pomodoro
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'matrix' %}active{% endif %}" href="{{ url_for('matrix') }}">
+                                <i class="fas fa-th me-2"></i>
+                                Priority Matrix
+                            </a>
+                        </li>
                     </ul>
                     
                     <hr class="my-4">
                     
-                    <!-- Dark mode toggle placeholder -->
+                    <!-- Theme toggle -->
                     <div class="text-center">
-                        <button class="btn btn-outline-secondary btn-sm" id="darkModeToggle" disabled>
-                            <i class="fas fa-moon me-1"></i>
-                            Dark Mode
+                        <button class="btn btn-outline-secondary btn-sm" id="themeToggle">
+                            <i class="fas fa-moon me-1" id="themeIcon"></i>
+                            <span id="themeText">Light Mode</span>
                         </button>
-                        <small class="d-block text-muted mt-1">Coming Soon</small>
                     </div>
                 </div>
             </nav>
@@ -80,5 +91,39 @@
     <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
     
     {% block scripts %}{% endblock %}
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            const html = document.documentElement;
+            
+            // Load saved theme or default to dark
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            html.setAttribute('data-bs-theme', savedTheme);
+            updateThemeButton(savedTheme);
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = html.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                html.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeButton(newTheme);
+            });
+            
+            function updateThemeButton(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun me-1';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    themeIcon.className = 'fas fa-moon me-1';
+                    themeText.textContent = 'Dark Mode';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

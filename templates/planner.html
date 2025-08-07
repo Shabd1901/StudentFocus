@@ -43,13 +43,18 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="taskCategory" class="form-label">Category</label>
-                        <select class="form-select" id="taskCategory">
-                            <option value="assignment">Assignment</option>
-                            <option value="exam">Exam</option>
-                            <option value="project">Project</option>
-                            <option value="reading">Reading</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <div class="input-group">
+                            <select class="form-select" id="taskCategory">
+                                <option value="assignment">Assignment</option>
+                                <option value="exam">Exam</option>
+                                <option value="project">Project</option>
+                                <option value="reading">Reading</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" onclick="showAddCategory()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -149,6 +154,10 @@
                         <i class="fas fa-trophy me-1"></i>
                         Celebrate Progress
                     </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="manageCategories()">
+                        <i class="fas fa-tags me-1"></i>
+                        Manage Categories
+                    </button>
                 </div>
             </div>
         </div>
@@ -160,11 +169,14 @@
 <script>
 // Task management functionality
 let tasks = JSON.parse(localStorage.getItem('studentTasks') || '[]');
+let categories = JSON.parse(localStorage.getItem('taskCategories') || '["assignment", "exam", "project", "reading", "other"]');
+let editingTaskId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Set today's date as default
     document.getElementById('taskDue').value = new Date().toISOString().split('T')[0];
     
+    loadCategories();
     displayTasks();
     updateStats();
     
@@ -277,9 +289,14 @@ function displayTasks() {
                         Due: ${new Date(task.due).toLocaleDateString()}
                         ${isOverdue ? '<span class="text-danger ms-2"><i class="fas fa-exclamation-triangle"></i> Overdue</span>' : ''}
                     </small>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -333,6 +350,98 @@ function updateStats() {
     
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('completedCount').textContent = completed;
+}
+
+function loadCategories() {
+    const select = document.getElementById('taskCategory');
+    select.innerHTML = '';
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        select.appendChild(option);
+    });
+}
+
+function showAddCategory() {
+    const categoryName = prompt('Enter new category name:');
+    if (categoryName && categoryName.trim()) {
+        const newCategory = categoryName.trim().toLowerCase();
+        if (!categories.includes(newCategory)) {
+            categories.push(newCategory);
+            localStorage.setItem('taskCategories', JSON.stringify(categories));
+            loadCategories();
+            document.getElementById('taskCategory').value = newCategory;
+        }
+    }
+}
+
+function manageCategories() {
+    const categoryList = categories.map((cat, index) => `${index + 1}. ${cat}`).join('\n');
+    const message = `Current categories:\n${categoryList}\n\nEnter the number of the category to delete, or 'add' to add a new one:`;
+    const action = prompt(message);
+    
+    if (action === 'add') {
+        showAddCategory();
+    } else {
+        const index = parseInt(action) - 1;
+        if (index >= 0 && index < categories.length) {
+            const categoryToDelete = categories[index];
+            if (confirm(`Delete category "${categoryToDelete}"? This won't affect existing tasks.`)) {
+                categories.splice(index, 1);
+                localStorage.setItem('taskCategories', JSON.stringify(categories));
+                loadCategories();
+            }
+        }
+    }
+}
+
+function editTask(id) {
+    editingTaskId = id;
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskDue').value = task.due;
+        document.getElementById('taskPriority').value = task.priority;
+        document.getElementById('taskCategory').value = task.category;
+        document.getElementById('taskDescription').value = task.description;
+        
+        // Change button text
+        const addBtn = document.querySelector('button[onclick="saveTask()"]');
+        addBtn.innerHTML = '<i class="fas fa-save me-1"></i>Update Task';
+        addBtn.onclick = updateTask;
+    }
+}
+
+function updateTask() {
+    const task = tasks.find(t => t.id === editingTaskId);
+    if (task) {
+        const title = document.getElementById('taskTitle').value.trim();
+        if (!title) {
+            alert('Please enter a task title.');
+            return;
+        }
+        
+        task.title = title;
+        task.due = document.getElementById('taskDue').value;
+        task.priority = document.getElementById('taskPriority').value;
+        task.category = document.getElementById('taskCategory').value;
+        task.description = document.getElementById('taskDescription').value.trim();
+        
+        localStorage.setItem('studentTasks', JSON.stringify(tasks));
+        
+        showSuccessMessage('Task updated successfully!');
+        addNewTask(); // Reset form
+        displayTasks();
+        updateStats();
+        
+        // Reset button
+        const addBtn = document.querySelector('button[onclick="updateTask()"]');
+        addBtn.innerHTML = '<i class="fas fa-save me-1"></i>Add Task';
+        addBtn.onclick = saveTask;
+        editingTaskId = null;
+    }
 }
 
 function showSuccessMessage(message) {

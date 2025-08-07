@@ -54,16 +54,56 @@
                 </div>
                 
                 <div class="mt-3">
-                    <button class="btn btn-primary" onclick="saveMoodEntry()">
-                        <i class="fas fa-save me-1"></i>
-                        Save Entry
-                    </button>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="moodDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="moodDate">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" onclick="saveMoodEntry()">
+                                <i class="fas fa-save me-1"></i>
+                                Save Entry
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="col-lg-4">
+        <!-- Mood Calendar -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">Mood Calendar</h6>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-2">
+                <div class="text-center mb-2">
+                    <strong id="calendarMonth"></strong>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar will be generated here -->
+                </div>
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between text-center small">
+                        <div><span class="badge bg-success">•</span> Excellent</div>
+                        <div><span class="badge bg-primary">•</span> Good</div>
+                        <div><span class="badge bg-warning">•</span> Okay</div>
+                        <div><span class="badge bg-danger">•</span> Stressed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mood Tips -->
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">Mood Tips</h6>
@@ -89,9 +129,16 @@
 
 {% block scripts %}
 <script>
-// Mood button interactions
+// Mood tracking data
+let moodEntries = JSON.parse(localStorage.getItem('moodEntries') || '[]');
+let currentCalendarDate = new Date();
+let selectedDate = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     const moodButtons = document.querySelectorAll('.mood-btn');
+    
+    // Set today's date as default
+    document.getElementById('moodDate').value = new Date().toISOString().split('T')[0];
     
     moodButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -101,6 +148,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
         });
     });
+    
+    generateCalendar();
+    updateCalendar();
 });
 
 function saveMoodEntry() {
@@ -108,6 +158,35 @@ function saveMoodEntry() {
     if (activeMood) {
         const mood = activeMood.dataset.mood;
         const notes = document.getElementById('moodNotes').value;
+        const date = document.getElementById('moodDate').value;
+        
+        if (!date) {
+            alert('Please select a date for your mood entry.');
+            return;
+        }
+        
+        // Check if entry already exists for this date
+        const existingEntryIndex = moodEntries.findIndex(entry => entry.date === date);
+        
+        const moodEntry = {
+            date: date,
+            mood: mood,
+            notes: notes,
+            timestamp: new Date().toISOString()
+        };
+        
+        if (existingEntryIndex >= 0) {
+            // Update existing entry
+            moodEntries[existingEntryIndex] = moodEntry;
+        } else {
+            // Add new entry
+            moodEntries.push(moodEntry);
+        }
+        
+        // Sort entries by date (newest first)
+        moodEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        localStorage.setItem('moodEntries', JSON.stringify(moodEntries));
         
         // Show success message
         const alert = document.createElement('div');
@@ -120,19 +199,209 @@ function saveMoodEntry() {
         
         document.querySelector('.card-body').appendChild(alert);
         
+        // Update calendar
+        updateCalendar();
+        
         // Trigger confetti for positive moods
         if (mood === 'excellent' || mood === 'good') {
             celebrateProgress();
         }
         
-        // Clear form after a delay
+        // Clear form after a delay but keep the date
         setTimeout(() => {
             document.getElementById('moodNotes').value = '';
-            moodButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('active'));
+            // Reset to today's date
+            document.getElementById('moodDate').value = new Date().toISOString().split('T')[0];
         }, 2000);
     } else {
         alert('Please select a mood before saving!');
     }
+}
+
+function generateCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    document.getElementById('calendarMonth').textContent = 
+        currentCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+    
+    // Create calendar grid
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+    grid.style.gap = '2px';
+    
+    // Day headers
+    const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    dayHeaders.forEach(day => {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'text-center small fw-bold p-1';
+        dayEl.textContent = day;
+        grid.appendChild(dayEl);
+    });
+    
+    // Empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'calendar-day p-1';
+        grid.appendChild(emptyEl);
+    }
+    
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day text-center p-1 border rounded cursor-pointer';
+        dayEl.style.cursor = 'pointer';
+        dayEl.style.minHeight = '30px';
+        dayEl.style.display = 'flex';
+        dayEl.style.alignItems = 'center';
+        dayEl.style.justifyContent = 'center';
+        dayEl.textContent = day;
+        
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        dayEl.dataset.date = dateStr;
+        
+        // Check if this date has a mood entry
+        const moodEntry = moodEntries.find(entry => entry.date === dateStr);
+        if (moodEntry) {
+            const moodColors = {
+                excellent: 'success',
+                good: 'primary', 
+                okay: 'warning',
+                stressed: 'danger'
+            };
+            dayEl.classList.add(`bg-${moodColors[moodEntry.mood]}`, 'text-white');
+            dayEl.title = `${moodEntry.mood} - ${moodEntry.notes}`;
+        }
+        
+        dayEl.addEventListener('click', () => showDayDetails(dateStr));
+        
+        grid.appendChild(dayEl);
+    }
+}
+
+function updateCalendar() {
+    generateCalendar();
+}
+
+function changeMonth(direction) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+    generateCalendar();
+}
+
+function showDayDetails(dateStr) {
+    const date = new Date(dateStr);
+    const formattedDate = date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Get all entries for this date
+    const moodEntry = moodEntries.find(entry => entry.date === dateStr);
+    const pomodoroSessions = JSON.parse(localStorage.getItem('pomodoroSessions') || '[]')
+        .filter(session => session.date === dateStr);
+    const notes = JSON.parse(localStorage.getItem('studentNotes') || '[]')
+        .filter(note => note.date === dateStr);
+    const tasks = JSON.parse(localStorage.getItem('studentTasks') || '[]')
+        .filter(task => task.due === dateStr);
+    
+    let content = `<h6>${formattedDate}</h6>`;
+    
+    // Mood entry
+    if (moodEntry) {
+        content += `
+            <div class="mb-3">
+                <h6><i class="fas fa-smile text-primary me-2"></i>Mood</h6>
+                <div class="alert alert-info py-2">
+                    <strong>${moodEntry.mood.charAt(0).toUpperCase() + moodEntry.mood.slice(1)}</strong>
+                    ${moodEntry.notes ? `<br><small>${moodEntry.notes}</small>` : ''}
+                </div>
+            </div>
+        `;
+    } else {
+        content += `
+            <div class="mb-3">
+                <button class="btn btn-outline-primary btn-sm" onclick="addMoodForDate('${dateStr}')">
+                    <i class="fas fa-plus me-1"></i>Add Mood Entry
+                </button>
+            </div>
+        `;
+    }
+    
+    // Pomodoro sessions
+    if (pomodoroSessions.length > 0) {
+        content += `
+            <div class="mb-3">
+                <h6><i class="fas fa-clock text-success me-2"></i>Pomodoro Sessions (${pomodoroSessions.length})</h6>
+                ${pomodoroSessions.map(session => `
+                    <div class="small mb-1">
+                        • ${session.duration} min ${session.type} session at ${session.time}
+                        ${session.description ? `<br>&nbsp;&nbsp;<em>${session.description}</em>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // Tasks due
+    if (tasks.length > 0) {
+        content += `
+            <div class="mb-3">
+                <h6><i class="fas fa-tasks text-warning me-2"></i>Tasks Due (${tasks.length})</h6>
+                ${tasks.map(task => `
+                    <div class="small mb-1">
+                        • ${task.title} ${task.completed ? '✅' : '❌'}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    if (moodEntry || pomodoroSessions.length > 0 || tasks.length > 0) {
+        // Show modal with day details
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Day Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+        
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    } else {
+        // Empty day - offer to add mood entry
+        addMoodForDate(dateStr);
+    }
+}
+
+function addMoodForDate(dateStr) {
+    document.getElementById('moodDate').value = dateStr;
+    document.getElementById('moodDate').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 </script>
 {% endblock %}

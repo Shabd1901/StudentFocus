@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}Eisenhower Matrix - Student Productivity Hub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-th text-primary me-2"></i>
+        Eisenhower Matrix
+    </h1>
+    <button class="btn btn-primary" onclick="addNewMatrixTask()">
+        <i class="fas fa-plus me-1"></i>
+        Add Task
+    </button>
+</div>
+
+<div class="row g-3">
+    <!-- Urgent & Important (Do First) -->
+    <div class="col-md-6">
+        <div class="card border-danger h-100">
+            <div class="card-header bg-danger text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Urgent & Important (Do First)
+                </h6>
+            </div>
+            <div class="card-body" id="urgent-important">
+                <div class="task-zone" data-quadrant="urgent-important">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-fire fa-2x mb-2"></i>
+                        <p class="small">Critical tasks that need immediate attention</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger btn-sm w-100 mt-2" onclick="showQuickAdd('urgent-important')">
+                    <i class="fas fa-plus me-1"></i>Quick Add
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Important & Not Urgent (Schedule) -->
+    <div class="col-md-6">
+        <div class="card border-warning h-100">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Important & Not Urgent (Schedule)
+                </h6>
+            </div>
+            <div class="card-body" id="important-noturgent">
+                <div class="task-zone" data-quadrant="important-noturgent">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clock fa-2x mb-2"></i>
+                        <p class="small">Important tasks to plan and schedule</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline-warning btn-sm w-100 mt-2" onclick="showQuickAdd('important-noturgent')">
+                    <i class="fas fa-plus me-1"></i>Quick Add
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Urgent & Not Important (Delegate) -->
+    <div class="col-md-6">
+        <div class="card border-info h-100">
+            <div class="card-header bg-info text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-share me-2"></i>
+                    Urgent & Not Important (Delegate)
+                </h6>
+            </div>
+            <div class="card-body" id="urgent-notimportant">
+                <div class="task-zone" data-quadrant="urgent-notimportant">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-user-friends fa-2x mb-2"></i>
+                        <p class="small">Tasks that can be delegated or automated</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline-info btn-sm w-100 mt-2" onclick="showQuickAdd('urgent-notimportant')">
+                    <i class="fas fa-plus me-1"></i>Quick Add
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Neither Urgent nor Important (Eliminate) -->
+    <div class="col-md-6">
+        <div class="card border-secondary h-100">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-trash me-2"></i>
+                    Neither Urgent nor Important (Eliminate)
+                </h6>
+            </div>
+            <div class="card-body" id="noturgent-notimportant">
+                <div class="task-zone" data-quadrant="noturgent-notimportant">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-ban fa-2x mb-2"></i>
+                        <p class="small">Time-wasting activities to eliminate</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm w-100 mt-2" onclick="showQuickAdd('noturgent-notimportant')">
+                    <i class="fas fa-plus me-1"></i>Quick Add
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>
+                    Add Task to <span id="modalQuadrantName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalQuadrant">
+                <div class="mb-3">
+                    <label for="quickTaskTitle" class="form-label">Task Title</label>
+                    <input type="text" class="form-control" id="quickTaskTitle" placeholder="Enter task title...">
+                </div>
+                <div class="mb-3">
+                    <label for="quickTaskDescription" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="quickTaskDescription" rows="3" placeholder="Task details..."></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="quickTaskDue" class="form-label">Due Date (Optional)</label>
+                        <input type="date" class="form-control" id="quickTaskDue">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="quickTaskPriority" class="form-label">Priority</label>
+                        <select class="form-select" id="quickTaskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveMatrixTask()">Add Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Task Modal -->
+<div class="modal fade" id="fullTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks me-2"></i>
+                    Add New Matrix Task
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="taskTitle" class="form-label">Task Title *</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="taskDue" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="taskDue">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="taskDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="taskPriority" class="form-label">Priority</label>
+                        <select class="form-select" id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="taskEstimate" class="form-label">Time Estimate (hours)</label>
+                        <input type="number" class="form-control" id="taskEstimate" min="0.5" step="0.5">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="taskCategory" class="form-label">Category</label>
+                        <select class="form-select" id="taskCategory">
+                            <option value="work">Work</option>
+                            <option value="study">Study</option>
+                            <option value="personal">Personal</option>
+                            <option value="health">Health</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Classification</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="urgency" id="urgent" value="urgent">
+                                <label class="form-check-label" for="urgent">Urgent</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="urgency" id="noturgent" value="noturgent">
+                                <label class="form-check-label" for="noturgent">Not Urgent</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="importance" id="important" value="important">
+                                <label class="form-check-label" for="important">Important</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="importance" id="notimportant" value="notimportant">
+                                <label class="form-check-label" for="notimportant">Not Important</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveFullMatrixTask()">Add to Matrix</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let matrixTasks = JSON.parse(localStorage.getItem('matrixTasks') || '[]');
+
+document.addEventListener('DOMContentLoaded', function() {
+    displayMatrixTasks();
+});
+
+function addNewMatrixTask() {
+    // Clear form
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDescription').value = '';
+    document.getElementById('taskDue').value = '';
+    document.getElementById('taskPriority').value = 'medium';
+    document.getElementById('taskEstimate').value = '';
+    document.getElementById('taskCategory').value = 'work';
+    
+    // Clear radio buttons
+    document.querySelectorAll('input[name="urgency"]').forEach(radio => radio.checked = false);
+    document.querySelectorAll('input[name="importance"]').forEach(radio => radio.checked = false);
+    
+    const modal = new bootstrap.Modal(document.getElementById('fullTaskModal'));
+    modal.show();
+}
+
+function showQuickAdd(quadrant) {
+    document.getElementById('modalQuadrant').value = quadrant;
+    document.getElementById('modalQuadrantName').textContent = getQuadrantName(quadrant);
+    
+    // Clear form
+    document.getElementById('quickTaskTitle').value = '';
+    document.getElementById('quickTaskDescription').value = '';
+    document.getElementById('quickTaskDue').value = '';
+    document.getElementById('quickTaskPriority').value = 'medium';
+    
+    const modal = new bootstrap.Modal(document.getElementById('quickAddModal'));
+    modal.show();
+}
+
+function getQuadrantName(quadrant) {
+    const names = {
+        'urgent-important': 'Do First',
+        'important-noturgent': 'Schedule',
+        'urgent-notimportant': 'Delegate',
+        'noturgent-notimportant': 'Eliminate'
+    };
+    return names[quadrant] || quadrant;
+}
+
+function saveQuickAdd() {
+    const quadrant = document.getElementById('modalQuadrant').value;
+    const title = document.getElementById('quickTaskTitle').value.trim();
+    
+    if (!title) {
+        alert('Please enter a task title.');
+        return;
+    }
+    
+    const task = {
+        id: Date.now(),
+        title: title,
+        description: document.getElementById('quickTaskDescription').value.trim(),
+        due: document.getElementById('quickTaskDue').value,
+        priority: document.getElementById('quickTaskPriority').value,
+        quadrant: quadrant,
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    matrixTasks.unshift(task);
+    localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+    
+    displayMatrixTasks();
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('quickAddModal'));
+    modal.hide();
+    
+    celebrateProgress();
+}
+
+function saveMatrixTask() {
+    const title = document.getElementById('quickTaskTitle').value.trim();
+    const quadrant = document.getElementById('modalQuadrant').value;
+    
+    if (!title) {
+        alert('Please enter a task title.');
+        return;
+    }
+    
+    const task = {
+        id: Date.now(),
+        title: title,
+        description: document.getElementById('quickTaskDescription').value.trim(),
+        due: document.getElementById('quickTaskDue').value,
+        priority: document.getElementById('quickTaskPriority').value,
+        quadrant: quadrant,
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    matrixTasks.unshift(task);
+    localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+    
+    displayMatrixTasks();
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('quickAddModal'));
+    modal.hide();
+    
+    celebrateProgress();
+}
+
+function saveFullMatrixTask() {
+    const title = document.getElementById('taskTitle').value.trim();
+    const urgency = document.querySelector('input[name="urgency"]:checked');
+    const importance = document.querySelector('input[name="importance"]:checked');
+    
+    if (!title) {
+        alert('Please enter a task title.');
+        return;
+    }
+    
+    if (!urgency || !importance) {
+        alert('Please classify the task as urgent/not urgent and important/not important.');
+        return;
+    }
+    
+    const quadrant = `${urgency.value}-${importance.value}`;
+    
+    const task = {
+        id: Date.now(),
+        title: title,
+        description: document.getElementById('taskDescription').value.trim(),
+        due: document.getElementById('taskDue').value,
+        priority: document.getElementById('taskPriority').value,
+        estimate: document.getElementById('taskEstimate').value,
+        category: document.getElementById('taskCategory').value,
+        quadrant: quadrant,
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    matrixTasks.unshift(task);
+    localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+    
+    displayMatrixTasks();
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('fullTaskModal'));
+    modal.hide();
+    
+    celebrateProgress();
+}
+
+function displayMatrixTasks() {
+    const quadrants = ['urgent-important', 'important-noturgent', 'urgent-notimportant', 'noturgent-notimportant'];
+    
+    quadrants.forEach(quadrant => {
+        const container = document.querySelector(`#${quadrant} .task-zone`);
+        const quadrantTasks = matrixTasks.filter(task => task.quadrant === quadrant && !task.completed);
+        
+        if (quadrantTasks.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-${getQuadrantIcon(quadrant)} fa-2x mb-2"></i>
+                    <p class="small">${getQuadrantDescription(quadrant)}</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = quadrantTasks.map(task => {
+            const priorityClass = {
+                high: 'danger',
+                medium: 'warning', 
+                low: 'success'
+            }[task.priority];
+            
+            const isOverdue = task.due && new Date(task.due) < new Date();
+            
+            return `
+                <div class="card mb-2 task-card" data-task-id="${task.id}">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" onchange="toggleMatrixTask(${task.id})">
+                                <label class="form-check-label">
+                                    <strong class="small">${task.title}</strong>
+                                </label>
+                            </div>
+                            <span class="badge bg-${priorityClass}">${task.priority}</span>
+                        </div>
+                        
+                        ${task.description ? `<p class="text-muted small mb-1 ms-3">${task.description}</p>` : ''}
+                        
+                        <div class="d-flex justify-content-between align-items-center ms-3">
+                            ${task.due ? `
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${new Date(task.due).toLocaleDateString()}
+                                    ${isOverdue ? '<span class="text-danger ms-1"><i class="fas fa-exclamation-triangle"></i></span>' : ''}
+                                </small>
+                            ` : '<span></span>'}
+                            
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMatrixTask(${task.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    });
+}
+
+function getQuadrantIcon(quadrant) {
+    const icons = {
+        'urgent-important': 'fire',
+        'important-noturgent': 'clock',
+        'urgent-notimportant': 'user-friends',
+        'noturgent-notimportant': 'ban'
+    };
+    return icons[quadrant] || 'circle';
+}
+
+function getQuadrantDescription(quadrant) {
+    const descriptions = {
+        'urgent-important': 'Critical tasks that need immediate attention',
+        'important-noturgent': 'Important tasks to plan and schedule',
+        'urgent-notimportant': 'Tasks that can be delegated or automated',
+        'noturgent-notimportant': 'Time-wasting activities to eliminate'
+    };
+    return descriptions[quadrant] || '';
+}
+
+function toggleMatrixTask(id) {
+    const task = matrixTasks.find(t => t.id === id);
+    if (task) {
+        task.completed = !task.completed;
+        localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+        
+        if (task.completed) {
+            celebrateProgress();
+            setTimeout(displayMatrixTasks, 500);
+        } else {
+            displayMatrixTasks();
+        }
+    }
+}
+
+function deleteMatrixTask(id) {
+    if (confirm('Are you sure you want to delete this task?')) {
+        matrixTasks = matrixTasks.filter(t => t.id !== id);
+        localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+        displayMatrixTasks();
+    }
+}
+
+// Make tasks draggable between quadrants (advanced feature)
+let draggedTask = null;
+
+document.addEventListener('dragstart', function(e) {
+    if (e.target.classList.contains('task-card')) {
+        draggedTask = e.target;
+        e.target.style.opacity = '0.5';
+    }
+});
+
+document.addEventListener('dragend', function(e) {
+    if (e.target.classList.contains('task-card')) {
+        e.target.style.opacity = '';
+        draggedTask = null;
+    }
+});
+
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    const taskZone = e.target.closest('.task-zone');
+    
+    if (taskZone && draggedTask) {
+        const taskId = parseInt(draggedTask.dataset.taskId);
+        const newQuadrant = taskZone.dataset.quadrant;
+        
+        const task = matrixTasks.find(t => t.id === taskId);
+        if (task && task.quadrant !== newQuadrant) {
+            task.quadrant = newQuadrant;
+            localStorage.setItem('matrixTasks', JSON.stringify(matrixTasks));
+            displayMatrixTasks();
+        }
+    }
+});
+
+// Make task cards draggable
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.task-card')) {
+            const taskCard = e.target.closest('.task-card');
+            taskCard.setAttribute('draggable', 'true');
+        }
+    });
+});
+</script>
+{% endblock %}

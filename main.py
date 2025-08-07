@@ -29,5 +29,15 @@ def planner():
     """Render the planner page"""
     return render_template('planner.html')
 
+@app.route('/pomodoro')
+def pomodoro():
+    """Render the pomodoro timer page"""
+    return render_template('pomodoro.html')
+
+@app.route('/matrix')
+def matrix():
+    """Render the Eisenhower matrix page"""
+    return render_template('matrix.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
