@@ -117,8 +117,11 @@
 let notes = JSON.parse(localStorage.getItem('studentNotes') || '[]');
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
-    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
+    // Set today's date as default (in IST timezone)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('noteDate').value = istDate.toISOString().split('T')[0];
     
     displayRecentNotes();
 });
@@ -126,7 +129,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function addNewNote() {
     document.getElementById('noteTitle').value = '';
     document.getElementById('noteContent').value = '';
-    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('noteDate').value = istDate.toISOString().split('T')[0];
     document.getElementById('noteTitle').focus();
 }
 
@@ -173,7 +179,10 @@ function saveNote() {
 function clearNote() {
     document.getElementById('noteTitle').value = '';
     document.getElementById('noteContent').value = '';
-    document.getElementById('noteDate').value = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('noteDate').value = istDate.toISOString().split('T')[0];
 }
 
 function displayRecentNotes() {

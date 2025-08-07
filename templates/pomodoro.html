@@ -355,15 +355,20 @@ function saveSessionNotes() {
 }
 
 function saveSessionRecord(description, rating) {
+    // Use IST timezone
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    
     const session = {
         id: timerState.currentSessionId,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString(),
+        date: istDate.toISOString().split('T')[0],
+        time: istDate.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }),
         duration: timerState.sessionType === 'focus' ? 25 : (timerState.sessionType === 'break' ? 5 : 30),
         type: timerState.sessionType,
         description: description,
         rating: rating,
-        timestamp: new Date().toISOString()
+        timestamp: istDate.toISOString()
     };
     
     sessions.unshift(session);

@@ -137,8 +137,11 @@ let selectedDate = null;
 document.addEventListener('DOMContentLoaded', function() {
     const moodButtons = document.querySelectorAll('.mood-btn');
     
-    // Set today's date as default
-    document.getElementById('moodDate').value = new Date().toISOString().split('T')[0];
+    // Set today's date as default (in IST timezone)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('moodDate').value = istDate.toISOString().split('T')[0];
     
     moodButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -211,8 +214,11 @@ function saveMoodEntry() {
         setTimeout(() => {
             document.getElementById('moodNotes').value = '';
             document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('active'));
-            // Reset to today's date
-            document.getElementById('moodDate').value = new Date().toISOString().split('T')[0];
+            // Reset to today's date (in IST timezone)
+            const now = new Date();
+            const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+            const istDate = new Date(now.getTime() + istOffset);
+            document.getElementById('moodDate').value = istDate.toISOString().split('T')[0];
         }, 2000);
     } else {
         alert('Please select a mood before saving!');
@@ -267,8 +273,11 @@ function generateCalendar() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayEl.dataset.date = dateStr;
         
-        // Check if this is today's date
-        const today = new Date().toISOString().split('T')[0];
+        // Check if this is today's date (in IST timezone)
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+        const istDate = new Date(now.getTime() + istOffset);
+        const today = istDate.toISOString().split('T')[0];
         const isToday = dateStr === today;
         
         // Check if this date has a mood entry

@@ -173,8 +173,11 @@ let categories = JSON.parse(localStorage.getItem('taskCategories') || '["assignm
 let editingTaskId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
-    document.getElementById('taskDue').value = new Date().toISOString().split('T')[0];
+    // Set today's date as default (in IST timezone)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('taskDue').value = istDate.toISOString().split('T')[0];
     
     loadCategories();
     displayTasks();
@@ -189,7 +192,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function addNewTask() {
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDescription').value = '';
-    document.getElementById('taskDue').value = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate = new Date(now.getTime() + istOffset);
+    document.getElementById('taskDue').value = istDate.toISOString().split('T')[0];
     document.getElementById('taskPriority').value = 'medium';
     document.getElementById('taskCategory').value = 'assignment';
     document.getElementById('taskTitle').focus();
@@ -215,7 +221,7 @@ function saveTask() {
         category: category,
         description: description,
         completed: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date(new Date().getTime() + 5.5 * 60 * 60 * 1000).toISOString()
     };
     
     tasks.unshift(task);
