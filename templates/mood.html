@@ -267,9 +267,28 @@ function generateCalendar() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayEl.dataset.date = dateStr;
         
+        // Check if this is today's date
+        const today = new Date().toISOString().split('T')[0];
+        const isToday = dateStr === today;
+        
         // Check if this date has a mood entry
         const moodEntry = moodEntries.find(entry => entry.date === dateStr);
-        if (moodEntry) {
+        
+        if (isToday) {
+            if (moodEntry) {
+                const moodColors = {
+                    excellent: 'success',
+                    good: 'primary', 
+                    okay: 'warning',
+                    stressed: 'danger'
+                };
+                dayEl.classList.add(`bg-${moodColors[moodEntry.mood]}`, 'text-white', 'border-3', 'border-warning');
+                dayEl.title = `Today - ${moodEntry.mood} - ${moodEntry.notes}`;
+            } else {
+                dayEl.classList.add('bg-warning', 'text-dark', 'fw-bold');
+                dayEl.title = 'Today';
+            }
+        } else if (moodEntry) {
             const moodColors = {
                 excellent: 'success',
                 good: 'primary', 

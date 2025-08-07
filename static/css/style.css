@@ -209,6 +209,15 @@ main {
     position: relative;
 }
 
+.calendar-day.today {
+    box-shadow: 0 0 0 3px var(--bs-warning);
+    font-weight: bold;
+}
+
+[data-bs-theme="dark"] .calendar-day.today {
+    box-shadow: 0 0 0 3px var(--bs-warning);
+}
+
 .calendar-day:hover {
     background-color: var(--bs-gray-200) !important;
     transform: scale(1.05);
