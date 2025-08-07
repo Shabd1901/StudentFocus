@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Mood Tracker - Student Productivity Hub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-smile text-primary me-2"></i>
+        Mood Tracker
+    </h1>
+    <button class="btn btn-primary" onclick="celebrateProgress()">
+        <i class="fas fa-star me-1"></i>
+        Celebrate!
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">How are you feeling today?</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 col-md-3 mb-3">
+                        <button class="btn btn-outline-success btn-lg mood-btn w-100" data-mood="excellent">
+                            <i class="fas fa-laugh-beam fa-2x d-block mb-2"></i>
+                            Excellent
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <button class="btn btn-outline-primary btn-lg mood-btn w-100" data-mood="good">
+                            <i class="fas fa-smile fa-2x d-block mb-2"></i>
+                            Good
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <button class="btn btn-outline-warning btn-lg mood-btn w-100" data-mood="okay">
+                            <i class="fas fa-meh fa-2x d-block mb-2"></i>
+                            Okay
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <button class="btn btn-outline-danger btn-lg mood-btn w-100" data-mood="stressed">
+                            <i class="fas fa-frown fa-2x d-block mb-2"></i>
+                            Stressed
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="moodNotes" class="form-label">What's on your mind?</label>
+                    <textarea class="form-control" id="moodNotes" rows="3" placeholder="Optional: Share your thoughts about today..."></textarea>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="saveMoodEntry()">
+                        <i class="fas fa-save me-1"></i>
+                        Save Entry
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Mood Tips</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Regular mood tracking helps you identify patterns and triggers in your emotional well-being.
+                </div>
+                
+                <h6>Quick Mood Boosters:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i>Take 5 deep breaths</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Listen to your favorite song</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Step outside for fresh air</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Text a friend</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mood button interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const moodButtons = document.querySelectorAll('.mood-btn');
+    
+    moodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            moodButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+});
+
+function saveMoodEntry() {
+    const activeMood = document.querySelector('.mood-btn.active');
+    if (activeMood) {
+        const mood = activeMood.dataset.mood;
+        const notes = document.getElementById('moodNotes').value;
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+        alert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Mood entry saved successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.querySelector('.card-body').appendChild(alert);
+        
+        // Trigger confetti for positive moods
+        if (mood === 'excellent' || mood === 'good') {
+            celebrateProgress();
+        }
+        
+        // Clear form after a delay
+        setTimeout(() => {
+            document.getElementById('moodNotes').value = '';
+            moodButtons.forEach(btn => btn.classList.remove('active'));
+        }, 2000);
+    } else {
+        alert('Please select a mood before saving!');
+    }
+}
+</script>
+{% endblock %}

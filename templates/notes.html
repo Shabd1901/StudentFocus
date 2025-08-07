@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Notes - Student Productivity Hub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-sticky-note text-primary me-2"></i>
+        Notes
+    </h1>
+    <button class="btn btn-primary" onclick="addNewNote()">
+        <i class="fas fa-plus me-1"></i>
+        New Note
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Note</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="noteTitle" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="noteTitle" placeholder="Enter note title...">
+                </div>
+                <div class="mb-3">
+                    <label for="noteContent" class="form-label">Content</label>
+                    <textarea class="form-control" id="noteContent" rows="8" placeholder="Start typing your note..."></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="saveNote()">
+                        <i class="fas fa-save me-1"></i>
+                        Save Note
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearNote()">
+                        <i class="fas fa-eraser me-1"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Notes -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Recent Notes</h6>
+            </div>
+            <div class="card-body" id="recentNotes">
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <p>No notes yet. Create your first note above!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Note-Taking Tips</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Pro Tip:</strong> Use clear titles and organize your thoughts for better recall later.
+                </div>
+                
+                <h6>Effective Note-Taking:</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>Use bullet points</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>Highlight key concepts</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>Review regularly</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>Keep it concise</li>
+                </ul>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Notes are stored locally in your browser
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportNotes()">
+                        <i class="fas fa-download me-1"></i>
+                        Export Notes
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="celebrateProgress()">
+                        <i class="fas fa-trophy me-1"></i>
+                        Celebrate Progress
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Notes functionality
+let notes = JSON.parse(localStorage.getItem('studentNotes') || '[]');
+
+document.addEventListener('DOMContentLoaded', function() {
+    displayRecentNotes();
+});
+
+function addNewNote() {
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteContent').value = '';
+    document.getElementById('noteTitle').focus();
+}
+
+function saveNote() {
+    const title = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteContent').value.trim();
+    
+    if (!title || !content) {
+        alert('Please enter both title and content for your note.');
+        return;
+    }
+    
+    const note = {
+        id: Date.now(),
+        title: title,
+        content: content,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString()
+    };
+    
+    notes.unshift(note);
+    localStorage.setItem('studentNotes', JSON.stringify(notes));
+    
+    // Show success message
+    showSuccessMessage('Note saved successfully!');
+    
+    // Clear form
+    clearNote();
+    
+    // Refresh display
+    displayRecentNotes();
+    
+    // Celebrate!
+    celebrateProgress();
+}
+
+function clearNote() {
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteContent').value = '';
+}
+
+function displayRecentNotes() {
+    const container = document.getElementById('recentNotes');
+    
+    if (notes.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-file-alt fa-3x mb-3"></i>
+                <p>No notes yet. Create your first note above!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const recentNotes = notes.slice(0, 5);
+    container.innerHTML = recentNotes.map(note => `
+        <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="mb-0">${note.title}</h6>
+                <small class="text-muted">${note.date}</small>
+            </div>
+            <p class="text-muted small mb-2">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="editNote(${note.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function editNote(id) {
+    const note = notes.find(n => n.id === id);
+    if (note) {
+        document.getElementById('noteTitle').value = note.title;
+        document.getElementById('noteContent').value = note.content;
+        
+        // Remove the note from array (it will be re-added when saved)
+        notes = notes.filter(n => n.id !== id);
+        localStorage.setItem('studentNotes', JSON.stringify(notes));
+        displayRecentNotes();
+    }
+}
+
+function deleteNote(id) {
+    if (confirm('Are you sure you want to delete this note?')) {
+        notes = notes.filter(n => n.id !== id);
+        localStorage.setItem('studentNotes', JSON.stringify(notes));
+        displayRecentNotes();
+        showSuccessMessage('Note deleted successfully!');
+    }
+}
+
+function exportNotes() {
+    if (notes.length === 0) {
+        alert('No notes to export!');
+        return;
+    }
+    
+    const exportData = notes.map(note => 
+        `Title: ${note.title}\nDate: ${note.date} ${note.time}\nContent: ${note.content}\n\n---\n\n`
+    ).join('');
+    
+    const blob = new Blob([exportData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-notes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showSuccessMessage('Notes exported successfully!');
+}
+
+function showSuccessMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+    alert.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.card-body').appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}
