@@ -1,7 +1,9 @@
 # 🎓 StudentFocus
 
+
+
 View project: https://studentfocus.onrender.com
-Note: This link redirects to the shared instance of StudentFocus. Since the app does not include user authentication, all data entered is visible to anyone accessing the site.
+Note: This link redirects to the shared StudentFocus instance. Since the app does not include user authentication, all data entered is visible to anyone accessing the site.
 
 A simple, clean, and responsive Flask-based productivity web app designed for students.  
 Version 1 focuses on clarity and usability — helping students track moods, write notes, and plan.
@@ -25,25 +27,6 @@ Version 1 focuses on clarity and usability — helping students track moods, wri
 - 🎉 **Confetti animation** on key actions  
 - 📱 **Responsive layout** with sidebar navigation  
 - 🧘‍♀️ Student-friendly design and smooth user experience
-
----
-
-## 📁 Folder Structure
-
-StudentFocus/
-├── static/ # CSS, JS, images
-│ ├── style.css
-│ └── confetti.js
-├── templates/ # HTML templates
-│ ├── layout.html
-│ ├── index.html
-│ ├── mood.html
-│ ├── notes.html
-│ └── planner.html
-├── main.py # Flask app entry point
-├── requirements.txt # Python dependencies
-└── README.md
-
 
 ---
 
